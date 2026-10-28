@@ -1,5 +1,9 @@
 # Bot repair and verification
 
+## GitHub synchronization and identity
+
+After adding verified trivia answers or making bot changes, commit and push the relevant source, knowledge-bank, documentation and test changes to `https://github.com/Nyxolir/mff-bot` on `main`, then verify the remote commit. Use **Nyxolir** as the creator and Git author/committer, with the repository's no-reply email. Preserve upstream and third-party attribution. Do not upload personal names or machine-specific user paths, credentials, diagnostics, raw screenshot fixtures, saved queue/account state or pending submissions. Keep the existing ignore rules; never force-add private runtime files. Run checks appropriate to each change before publishing; shared reader/controller changes require the full suite below. If verification or pushing fails, report what remains local instead of claiming GitHub is updated.
+
 User resource policy (October 25): boost is the only resource-amount gate, for every content mode. Do not OCR, require, compare or wait on energy amounts or ticket stock/cost amounts. Verify enough boost for a full boosted batch; retain GBR clearance, required clear counts, remaining entry counts, mode/control identity, zero-crystal protection and pending-submission safeguards. This supersedes earlier energy/ticket amount requirements below.
 
 This directory is the existing live farming bot. Keep repairs separate from the PC port in the sibling research project. Preserve saved submissions, completed-task caches, resource gates, and Dispatch claim scheduling across repairs.

@@ -8,6 +8,22 @@ from lib.screen_reader import ScreenEvidence
 from lib.daily_queue import next_reset
 
 class TriviaTests(unittest.TestCase):
+    def test_oct28_missing_questions_use_named_answers_and_preserve_pending_guard(self):
+        now=datetime.now(timezone.utc)
+        for name,number,answer in (('trivia_olympus_oct28.png',2,'Loki'),
+                                   ('trivia_silver_samurai_oct28.png',5,'Muramasa Blade')):
+            with self.subTest(name=name):
+                evidence=TriviaReader().read(Path(__file__).parent/'fixtures'/name)
+                self.assertEqual(evidence.screen,'trivia_question');self.assertFalse(evidence.errors)
+                self.assertEqual(evidence.values['question_number'],number)
+                index=choose_option(evidence.values['question'],evidence.values['options'])
+                self.assertIsNotNone(index)
+                self.assertEqual(evidence.values['options'][index],answer)
+                session=TriviaSession(now)
+                self.assertEqual(session.observe(evidence,now),('answer',*evidence.values['points'][index]))
+                self.assertEqual(session.observe(evidence,now),('wait',0,0))
+                self.assertFalse(session.done)
+
     def test_oct27_moon_knight_question_uses_named_answer(self):
         for name,number in (('trivia_moon_knight_oct27.png',1),('trivia_surtur_oct27.png',2)):
             with self.subTest(name=name):
@@ -67,7 +83,8 @@ class TriviaTests(unittest.TestCase):
     def test_completed_summary_finishes_from_either_scroll_position_without_input(self):
         now=datetime.now(timezone.utc);root=Path(__file__).parent/'fixtures'
         for name in ('trivia_completed_oct24_top.png','trivia_completed_oct24_bottom.png',
-                     'trivia_completed_top.png','trivia_completed_bottom.png','trivia_completed_oct28_bottom.png'):
+                     'trivia_completed_top.png','trivia_completed_bottom.png','trivia_completed_oct28_bottom.png',
+                     'trivia_completed_oct28_after_reset.png'):
             with self.subTest(name=name):
                 session=TriviaSession(now);session.pending='interrupted final answer'
                 e=TriviaReader().read(root/name)
