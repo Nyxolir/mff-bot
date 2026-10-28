@@ -5,13 +5,15 @@ from difflib import SequenceMatcher
 import re
 import unicodedata
 from lib.game.data.daily_trivia import trivia_qa
+from lib.app_paths import data_path,resource_root
 
 SOURCE_URL='https://quizlet.com/hk/699399827/future-fight-daily-trivia-flash-cards/'
 
 # Wording aliases checked against the supplied set. Retain the existing upstream
 # bank rather than duplicating the flashcard collection. Correct spelling in UI
 # answers matters: the source's "Dimension Derbis" is a typo.
-EXTRA_ANSWERS=Path(__file__).resolve().parents[1]/'settings/gui/trivia-answers.json'
+DEFAULT_ANSWERS=resource_root()/'settings/gui/trivia-answers.json'
+EXTRA_ANSWERS=data_path('settings/gui/trivia-answers.json')
 
 QUIZLET_ALIASES={
     "Which is the name of the bridge connects Yggdrasil's nine realms?":'Bifrost',
@@ -69,16 +71,18 @@ def answer_bank():
             bank[question]='Norn Stones of Chaos'
     bank.update(QUIZLET_ALIASES);bank.update(GAME_ANSWERS)
     # Read verified additions for each question so fixes need no GUI restart.
-    try:
-        extra=json.loads(EXTRA_ANSWERS.read_text(encoding='utf-8'))
-        if extra.get('version')==1 and isinstance(extra.get('answers'),dict):
-            known={normalize(q):answer_key(a) for q,a in bank.items()}
-            for question,answer in extra['answers'].items():
-                if not isinstance(question,str) or not isinstance(answer,str):continue
-                if len(normalize(question))<18 or not 1<=len(answer.strip())<=120:continue
-                if normalize(question) in known and known[normalize(question)]!=answer_key(answer):continue
-                bank[question]=answer
-    except (OSError,ValueError,TypeError,AttributeError):pass
+    for path in dict.fromkeys((DEFAULT_ANSWERS,EXTRA_ANSWERS)):
+        try:
+            extra=json.loads(path.read_text(encoding='utf-8'))
+            if extra.get('version')==1 and isinstance(extra.get('answers'),dict):
+                known={normalize(q):answer_key(a) for q,a in bank.items()}
+                for question,answer in extra['answers'].items():
+                    if not isinstance(question,str) or not isinstance(answer,str):continue
+                    if len(normalize(question))<18 or not 1<=len(answer.strip())<=120:continue
+                    if normalize(question) in known and known[normalize(question)]!=answer_key(answer):continue
+                    bank[question]=answer
+                    known[normalize(question)]=answer_key(answer)
+        except (OSError,ValueError,TypeError,AttributeError):pass
     return bank
 
 def lookup_answer(question,bank=None):

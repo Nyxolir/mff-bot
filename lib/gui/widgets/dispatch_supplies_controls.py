@@ -1,11 +1,12 @@
 """Periodic passive Dispatch collection within the continuous queue."""
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
+from lib.app_paths import data_path
 import json
 from lib.dispatch_supplies import DispatchSuppliesSession
 from lib.dispatch_schedule import load_schedule,next_supply_check
 from lib.resource_check import click_game_point
-SUPPLY_NEXT=Path(__file__).resolve().parents[3]/'settings/gui/dispatch-supply-next.txt'
+SUPPLY_NEXT=data_path('settings/gui/dispatch-supply-next.txt')
 SUPPLY_STATE=SUPPLY_NEXT.with_name('dispatch-supply-state.json')
 
 class DispatchSuppliesControls:

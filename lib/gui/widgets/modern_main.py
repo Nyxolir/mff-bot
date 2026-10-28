@@ -32,7 +32,8 @@ from lib.gui.widgets.zombie_controls import ZombieControls
 from lib.gui.widgets.converging_controls import ConvergingControls
 from lib.gui.widgets.emulator_recovery import EmulatorRecovery
 
-ROOT = Path(__file__).resolve().parents[3]
+from lib.app_paths import data_root
+ROOT = data_root()
 LOG_PATH = ROOT/'diagnostics/queue.log'
 STATE = ROOT / "settings/gui/modern-desktop.json"
 MODES = ["TIMELINE BATTLE", "OTHERWORLD BATTLE", "TEAM BATTLE ARENA", "WORLD EVENT", "ZOMBIE SURVIVAL", *sorted(UNBOOSTED_SWEEPS), *sorted(ENERGY_FARMS), "DISPATCH 7-1", "WORLD BOSS", "ALLIANCE BATTLE", "STORY ULTIMATE"]

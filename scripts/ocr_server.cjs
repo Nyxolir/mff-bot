@@ -4,9 +4,7 @@ const readline=require('node:readline');
 const path=require('node:path');
 const fs=require('node:fs');
 (async()=>{
-  const cachePath=path.resolve(__dirname,'../.cache/ocr');
-  fs.mkdirSync(cachePath,{recursive:true});
-  const worker=await createWorker('eng',1,{cachePath,logger:()=>{}});
+  const worker=await createWorker('eng',1,require('./ocr_options.cjs')());
   try{
     for await(const line of readline.createInterface({input:process.stdin,crlfDelay:Infinity})){
       try{

@@ -4,7 +4,26 @@ Modern version maintained by **Nyxolir**, based on the data, recognition
 templates and code of **tmarenko/mff_auto**. These instructions apply to the
 modern `app_gui.py` entry point, rather than the archived upstream controller.
 
-## 1. Install the prerequisites
+## Recommended: use the installer
+
+1. [Download MFF-Bot-Setup.exe](https://github.com/Nyxolir/mff-bot/releases/latest/download/MFF-Bot-Setup.exe)
+   and run it. No Python, Node.js or Tesseract installation is needed.
+2. Configure BlueStacks and enable ADB using steps 2 and 3 below.
+3. Open **MFF Bot** from the Start menu, click **Connect BlueStacks**, check the
+   preview, and configure your queue using steps 5 and 6.
+
+The installer is for Windows x64. It installs for the current user without an
+administrator account. It does not include BlueStacks or the game. The app
+starts idle; installation never starts farming. Step 4 below is only needed
+when running directly from source.
+
+To update, finish any active in-game run, stop the queue and install the latest
+version over the previous one. Installed data stays under
+`%LOCALAPPDATA%\Nyxolir\MFFBot`, outside program files, and is preserved by
+updates and uninstall. The unsigned installer and matching SHA-256 checksums
+are published under GitHub Releases.
+
+## 1. Prerequisites for running from source
 
 - Windows x64 and Python 3.12, including the Python launcher (`py`).
 - BlueStacks with Marvel Future Fight installed.
@@ -84,6 +103,9 @@ a fresh clone should use its own Tesseract installation.
 
 ## 5. Start and connect the modern GUI
 
+For an installed copy, use **Start menu > Nyxolir > MFF Bot**. For a source
+checkout, run:
+
 ```powershell
 .\.venv\Scripts\python.exe app_gui.py
 ```
@@ -128,6 +150,10 @@ stops new bot inputs; an in-game auto battle already submitted may continue.
 
 The bot creates its local GUI settings under `settings/gui/`, including queue
 configuration, verified daily completion, GBR clearance and pending outcomes.
+For an installed copy, this is `%LOCALAPPDATA%\Nyxolir\MFFBot\settings\gui`;
+for source runs, it remains the existing folder in the checkout. Logs follow
+the same distinction. Installing a release does not import account state from
+a development checkout.
 Daily completion and GBR clearance expire at **15:00 UTC**. Passive Dispatch
 claim scheduling has its own clock.
 
@@ -149,6 +175,12 @@ You can answer in the game yourself. To add a question for future attempts,
 first verify the correct answer from the game, then add it to the `answers`
 object in `settings/gui/trivia-answers.json`. Preserve the existing entries and
 the top-level `version: 1` field. The structure is:
+
+For an installed copy, edit
+`%LOCALAPPDATA%\Nyxolir\MFFBot\settings\gui\trivia-answers.json`; create the
+file with the structure below if it does not exist. Bundled verified answers
+and your separate additions are merged when a question is checked. Updating
+the app refreshes bundled answers without overwriting your additions.
 
 ```json
 {

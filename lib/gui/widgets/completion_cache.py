@@ -2,11 +2,12 @@
 from datetime import datetime,timezone,timedelta
 import json
 from pathlib import Path
+from lib.app_paths import data_path
 from lib.daily_queue import reset_period,next_reset
 from lib.farming import ENERGY_FARMS,UNBOOSTED_SWEEPS
 from dataclasses import asdict
 
-CACHE=Path(__file__).resolve().parents[3]/'settings/gui/completed-missions.json'
+CACHE=data_path('settings/gui/completed-missions.json')
 ALLOWED=ENERGY_FARMS|UNBOOSTED_SWEEPS|{'ALLIANCE BATTLE','DISPATCH 7-1','TIMELINE BATTLE','OTHERWORLD BATTLE','TEAM BATTLE ARENA','STORY ULTIMATE','ZOMBIE SURVIVAL'}
 
 def restore_completed(data,now):

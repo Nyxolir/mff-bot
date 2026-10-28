@@ -1,11 +1,12 @@
 """Start the game's Ultimate Auto Progress once per reset; never repeat a submission."""
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
+from lib.app_paths import data_path
 import json
 from lib.daily_queue import reset_period
 from lib.resource_check import click_game_point,InputNotSent
 
-STORY_STATE=Path(__file__).resolve().parents[3]/'settings/gui/story-run.json'
+STORY_STATE=data_path('settings/gui/story-run.json')
 
 class StoryControls:
  def init_story(self):

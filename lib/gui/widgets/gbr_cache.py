@@ -2,9 +2,10 @@
 import json
 from datetime import datetime,timezone
 from pathlib import Path
+from lib.app_paths import data_path
 from lib.daily_queue import DailyRaidGate
 
-CACHE=Path(__file__).resolve().parents[3]/'settings/gui/gbr-clearance.json'
+CACHE=data_path('settings/gui/gbr-clearance.json')
 
 class GbrCache:
     def load_gbr_clearance(self):

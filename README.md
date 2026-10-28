@@ -8,6 +8,35 @@ previous bot's game data, recognition templates, interface and selected code,
 and adds the current queue, screen readers, persistence and recovery behavior.
 Upstream and third-party license notices are preserved.
 
+## Install on Windows
+
+### [Download the Windows installer](https://github.com/Nyxolir/mff-bot/releases/latest/download/MFF-Bot-Setup.exe)
+
+Run **MFF-Bot-Setup.exe**, then open **MFF Bot** from the Start menu. Python,
+the OCR runtime and the English recognition model are included. You do not need
+to install Python, Node.js or Tesseract separately. BlueStacks and Marvel Future
+Fight are installed separately; enable **Settings > Advanced > Android Debug
+Bridge (ADB)** in BlueStacks and click **Connect BlueStacks** in the bot.
+
+The app starts idle. Choose your queue before starting it. See
+[SETUP.md](SETUP.md) for the connection and configuration walkthrough.
+
+To update, stop the queue, let any active game run finish, and install the new
+version over the previous one. Queues, pending outcomes, custom trivia answers
+and logs live separately under `%LOCALAPPDATA%\Nyxolir\MFFBot`; updates and
+uninstall preserve them. The installer is currently unsigned. Checksums and
+the matching source archive are included with every release.
+
+## How updates are published
+
+Every push to `main` starts the [Windows installer workflow](https://github.com/Nyxolir/mff-bot/actions/workflows/windows-release.yml).
+It builds a versioned installer, checks offline OCR and GUI startup, installs it
+into an isolated profile, verifies that reinstall and uninstall preserve user
+data, and then publishes a GitHub Release. The download link above always
+points to the newest successful release. Failed builds leave the previous
+working download in place. No manual ZIP upload is needed for routine fixes or
+new trivia answers. See [installer/BUILDING.md](installer/BUILDING.md).
+
 ## BlueStacks instead of a fixed Nox setup
 
 The modern queue supports BlueStacks through background ADB capture and input.
@@ -127,6 +156,8 @@ See the [trivia setup notes](SETUP.md#missing-trivia-answers) for the file forma
 Source, test code, recognition templates and verified trivia additions are
 included. Credentials, local machine paths, saved queue/account state,
 diagnostics, raw screenshot fixtures and compiled binaries are excluded.
+Compiled installers are distributed through Releases rather than committed to
+the source tree.
 Screenshot tests require the private local fixture set and cannot all run from
 a fresh clone. The source's full test command is:
 
@@ -144,7 +175,8 @@ above describes the current implementation.
 
 - Modern version: **Nyxolir**.
 - Original bot and reused data/templates: **tmarenko/mff_auto**.
-- Apache-2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Embedded third-party
-  source retains its own copyright and license notices.
+- Bot source: Apache-2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). The complete
+  installer also includes GPL-3.0 PyQt5 and LGPL Qt, with their component notices
+  and corresponding-source pointers. See [installer licensing](installer/LICENSING.md).
 
 Marvel Future Fight and its game assets belong to their respective owners.

@@ -3,10 +3,11 @@ from dataclasses import asdict,replace
 from datetime import datetime,timezone
 import json
 from pathlib import Path
+from lib.app_paths import data_path
 from lib.daily_queue import next_reset,reset_period
 from lib.objectives import MissionPlan
 
-CACHE=Path(__file__).resolve().parents[3]/'settings/gui/objective-checks.json'
+CACHE=data_path('settings/gui/objective-checks.json')
 
 def restore_plan(data,now):
     try:

@@ -5,8 +5,9 @@ from lib.trivia_session import TriviaSession
 from lib.resource_check import click_game_point
 from lib.daily_queue import reset_period,next_reset
 from pathlib import Path
+from lib.app_paths import data_path
 import json
-TRIVIA_CACHE=Path(__file__).resolve().parents[3]/'settings/gui/trivia-daily.json'
+TRIVIA_CACHE=data_path('settings/gui/trivia-daily.json')
 
 class TriviaControls:
     def trivia_due(self,now):

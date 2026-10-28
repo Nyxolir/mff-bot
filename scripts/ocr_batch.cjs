@@ -4,11 +4,9 @@ const fs=require('node:fs');
 const path=require('node:path');
 (async()=>{
   const requests=JSON.parse(fs.readFileSync(0,'utf8'));
-  const cachePath=path.resolve(__dirname,'../.cache/ocr');
-  fs.mkdirSync(cachePath,{recursive:true});
   let worker;
   try{
-    worker=await createWorker('eng',1,{cachePath,logger:()=>{}});
+    worker=await createWorker('eng',1,require('./ocr_options.cjs')());
     const result={};
     for(const request of requests){
       await worker.setParameters({tessedit_pageseg_mode:String(request.psm||7),

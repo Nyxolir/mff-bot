@@ -1,0 +1,24 @@
+MFF Bot by Nyxolir
+
+Python and offline English OCR are included. You do not need to install Python,
+Node.js or Tesseract yourself.
+
+1. Install BlueStacks and Marvel Future Fight, then sign in to the game yourself.
+2. Choose an English game interface and a landscape 16:9 resolution.
+3. In BlueStacks Settings > Advanced, enable Android Debug Bridge (ADB).
+4. Open MFF Bot from the Start menu, leave Background control enabled, and
+   click Connect BlueStacks. Confirm that the preview shows the correct player.
+5. Configure the enabled queue tasks and click Start Queue when ready.
+
+The bot opens idle; installing or launching it does not start farming.
+
+Settings, pending outcomes, trivia additions and logs are stored separately in:
+%LOCALAPPDATA%\Nyxolir\MFFBot
+Updates and uninstall preserve this data. Stop the queue and let any active
+in-game run finish before updating. Do not delete pending-state files.
+
+Some trivia answers are missing. Unknown answers are not guessed. See SETUP.md
+for adding game-confirmed answers and the README for queue priority rules.
+
+Project, source and updates: https://github.com/Nyxolir/mff-bot
+Based on tmarenko/mff_auto data, recognition templates and code.

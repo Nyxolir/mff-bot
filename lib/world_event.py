@@ -1,6 +1,7 @@
 """World Event visual evidence and daily/slot state, independent of energy farming."""
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
+from lib.app_paths import data_path
 import json,re
 import cv2
 import numpy as np
@@ -11,7 +12,7 @@ from lib.screen_reader import ScreenEvidence,ScreenReader,number
 from lib.farming import parse_counter
 from lib.daily_queue import reset_period,next_reset
 ROOT=Path(__file__).resolve().parents[1]
-CACHE=ROOT/'settings/gui/world-event.json'
+CACHE=data_path('settings/gui/world-event.json')
 
 def event_delay(text):
     match=re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?|(\d+)\s*m',text,re.I)

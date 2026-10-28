@@ -5,11 +5,9 @@ const path = require('node:path');
 
 (async () => {
   const settings = JSON.parse(process.argv[2]);
-  const cachePath = path.resolve(__dirname, '../.cache/ocr');
-  fs.mkdirSync(cachePath, { recursive: true });
   let worker;
   try {
-    worker = await createWorker('eng', 1, { cachePath, logger: () => {} });
+    worker = await createWorker('eng', 1, require('./ocr_options.cjs')());
     await worker.setParameters({
       tessedit_pageseg_mode: String(settings.psm),
       tessedit_char_whitelist: settings.whitelist || '',

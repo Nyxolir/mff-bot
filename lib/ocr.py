@@ -9,10 +9,11 @@ from threading import Lock
 from threading import Thread
 from queue import Queue,Empty
 import atexit
+from lib.app_paths import data_path,resource_root
 
 AUTOMATIC_PAGE_SEGMENTATION = 3
 RAW_LINE_PAGE_SEGMENTATION = 13
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = resource_root()
 
 
 class _JsOcrSession:
@@ -35,9 +36,12 @@ class _JsOcrSession:
             key=(runtime['node'],runtime['node_modules'])
             if self.process is None or self.process.poll() is not None or self.runtime_key!=key:
                 self.close();self.runtime_key=key;self.lines=Queue()
+                environment=dict(os.environ,NODE_PATH=runtime['node_modules'],MFF_OCR_CACHE=str(data_path('.cache/ocr')))
+                model=ROOT/'ocr/tessdata/eng.traineddata'
+                if model.is_file():environment['MFF_OCR_LANG_PATH']=str(model.parent)
                 self.process=subprocess.Popen([runtime['node'],str(ROOT/'scripts/ocr_server.cjs')],
                     stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,
-                    env=dict(os.environ,NODE_PATH=runtime['node_modules']),
+                    env=environment,
                     creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
                 def read_lines(stream,output):
                     try:
@@ -70,13 +74,18 @@ def native_executable():
     configured = os.environ.get("MFF_TESSERACT_CMD")
     if configured:
         return configured
+    if (ROOT/'ocr/node.exe').is_file():
+        return None
     candidate = shutil.which("tesseract")
     installed = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Tesseract-OCR/tesseract.exe"
     return candidate or (str(installed) if installed.is_file() else None)
 
 
 def js_runtime():
-    settings = ROOT / "settings/ocr-runtime.local.json"
+    bundled={'node':str(ROOT/'ocr/node.exe'),'node_modules':str(ROOT/'ocr/node_modules')}
+    if Path(bundled['node']).is_file() and (Path(bundled['node_modules'])/'tesseract.js/package.json').is_file():
+        return bundled
+    settings = data_path('settings/ocr-runtime.local.json')
     if not settings.is_file():
         return None
     data = json.loads(settings.read_text(encoding="utf-8"))

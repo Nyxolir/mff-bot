@@ -137,3 +137,4 @@ settings/ocr-runtime.local.json
 *.pem
 *.key
 .git-credentials
+/installer/ocr/node_modules/

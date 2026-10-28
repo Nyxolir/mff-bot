@@ -1,0 +1,9 @@
+{
+  "name": "nyxolir-mff-ocr-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned offline OCR dependencies for the MFF Bot installer",
+  "dependencies": {
+    "tesseract.js": "7.0.0"
+  }
+}
