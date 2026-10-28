@@ -1,0 +1,9 @@
+MFF Bot
+Modern version created and maintained by Nyxolir.
+
+Based on tmarenko/mff_auto (https://github.com/tmarenko/mff_auto).
+This fork reuses the original bot's game data, recognition templates,
+interface and selected source code. Original and third-party license notices
+are retained. See LICENSE and notices embedded in the corresponding files.
+
+Marvel Future Fight and its game assets belong to their respective owners.

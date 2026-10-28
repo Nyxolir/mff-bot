@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1150</width>
+    <height>630</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>MFF Auto</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,1">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
+      <item>
+       <widget class="QGroupBox" name="info_group">
+        <property name="title">
+         <string>Info</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label_username">
+             <property name="text">
+              <string>Username</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_energy">
+             <property name="text">
+              <string>Energy:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_gold">
+             <property name="text">
+              <string>Gold:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_boosts">
+             <property name="text">
+              <string>Boost:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="topMargin">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="autoplay_button">
+          <property name="minimumSize">
+           <size>
+            <width>120</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Automatically determines in-game battles and start casting skills</string>
+          </property>
+          <property name="text">
+           <string>Autoplay++</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="restart_game_button">
+          <property name="minimumSize">
+           <size>
+            <width>120</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Restart Game</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="7,0,0,10">
+      <item>
+       <widget class="QGroupBox" name="mission_queue_group">
+        <property name="title">
+         <string>Mission Queue</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QPushButton" name="queue_button_1">
+             <property name="text">
+              <string>Queue #1</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <property name="default">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="queue_button_2">
+             <property name="text">
+              <string>Queue #2</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="default">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="queue_button_3">
+             <property name="text">
+              <string>Queue #3</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="default">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="queue_button_4">
+             <property name="text">
+              <string>Queue #4</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="autoDefault">
+              <bool>false</bool>
+             </property>
+             <property name="default">
+              <bool>false</bool>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListWidget" name="queue_list_widget">
+           <property name="lineWidth">
+            <number>-1</number>
+           </property>
+           <property name="midLineWidth">
+            <number>0</number>
+           </property>
+           <property name="dragDropMode">
+            <enum>QAbstractItemView::InternalMove</enum>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="isWrapping" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Adjust</enum>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+           <property name="currentRow">
+            <number>-1</number>
+           </property>
+           <property name="sortingEnabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
+        <item>
+         <widget class="QGroupBox" name="mission_controls_group">
+          <property name="title">
+           <string>Mission Controls</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QPushButton" name="add_queue_button">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Add</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="edit_queue_button">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Edit</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="remove_queue_button">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="run_queue_button">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Run</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="settings_group">
+          <property name="title">
+           <string>Settings</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <layout class="QFormLayout" name="formLayout">
+             <property name="labelAlignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+             <property name="formAlignment">
+              <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+             </property>
+             <item row="3" column="0">
+              <widget class="QLabel" name="acquire_heroic_quest_rewards_label">
+               <property name="toolTip">
+                <string>Should bot acquire Heroic Quest rewards when they're available</string>
+               </property>
+               <property name="text">
+                <string>Acquire Heroic Quest rewards</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="acquire_heroic_quest_rewards_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Should bot acquire Heroic Quest rewards when they're available</string>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="mission_team_label">
+               <property name="toolTip">
+                <string>Your in-game team number for PvE modes</string>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Mission Team:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QSpinBox" name="mission_team_spin_box">
+               <property name="toolTip">
+                <string>Your in-game team number for PvE modes</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>5</number>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0">
+              <widget class="QLabel" name="timeline_team_label">
+               <property name="toolTip">
+                <string>Your in-game team number for PvP mode</string>
+               </property>
+               <property name="text">
+                <string>Timeline Team:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="1">
+              <widget class="QSpinBox" name="timeline_team_spin_box">
+               <property name="toolTip">
+                <string>Your in-game team number for PvP mode</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>5</number>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0">
+              <widget class="QLabel" name="handle_network_errors_label">
+               <property name="toolTip">
+                <string>Should bot restart current queue when network errors occurred</string>
+               </property>
+               <property name="text">
+                <string>Restart queue on network errors</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="1">
+              <widget class="QCheckBox" name="handle_network_errors_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Should bot restart current queue when network errors occurred</string>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="quick_start_group">
+        <property name="title">
+         <string>Quick Start</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QPushButton" name="daily_trivia_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Daily Trivia</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="comic_cards_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Comic Cards:
+Upgrade All</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="custom_gear_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Custom Gear Upgrade</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="dispatch_mission_rewards">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Dispatch Mission:
+ Acquire All Rewards</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="squad_battle_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Squad Battle:
+ All Battles</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="world_boss_invasion_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>World Boss Invasion:
+ All Battles</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="danger_room_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Danger Room:
+ 1 Battle</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="enhance_potential_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Enhance Potential
+with 10% success rate</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="shadowland_button">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Shadowland:
+Clear All Floors</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
+        <item>
+         <widget class="QGroupBox" name="game_screen_group">
+          <property name="title">
+           <string>Game Screen</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QLabel" name="screen_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(15, 0, 50);
+color: rgb(0, 0, 127);</string>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::WinPanel</enum>
+             </property>
+             <property name="lineWidth">
+              <number>1</number>
+             </property>
+             <property name="midLineWidth">
+              <number>0</number>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="logs_group">
+          <property name="title">
+           <string>Logs</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <widget class="QTabWidget" name="log_tab_widget">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="tab_3">
+              <attribute name="title">
+               <string>All</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QPlainTextEdit" name="logger_text">
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOn</enum>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="tab_5">
+              <attribute name="title">
+               <string>Info</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <widget class="QPlainTextEdit" name="logger_text_info">
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOn</enum>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="tab_6">
+              <attribute name="title">
+               <string>Errors</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QPlainTextEdit" name="logger_text_error">
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOn</enum>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1150</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

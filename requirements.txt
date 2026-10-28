@@ -1,0 +1,12 @@
+# Python 3.12, Windows x64; no CPython 3.6 native extensions.
+numpy>=2.0,<3
+opencv-python>=4.10,<5
+Pillow>=10.4,<13
+scikit-image>=0.24,<0.27
+pytesseract>=0.3.13,<0.4
+packaging>=24,<27
+regex>=2024.7
+pyautoit>=0.6.5,<0.7; sys_platform == 'win32'
+pywin32>=308; sys_platform == 'win32'
+PyQt5>=5.15.11,<6
+multiprocess>=0.70.17,<0.71
