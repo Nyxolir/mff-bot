@@ -10,7 +10,7 @@ Upstream and third-party license notices are preserved.
 
 ## Install on Windows
 
-### [Download the Windows installer](https://github.com/Nyxolir/mff-bot/releases/latest/download/MFF-Bot-Setup.exe)
+Windows installers are published as assets in this repository's Releases section.
 
 Run **MFF-Bot-Setup.exe**, then open **MFF Bot** from the Start menu. Python,
 the OCR runtime and the English recognition model are included. You do not need
@@ -32,9 +32,9 @@ the matching source archive are included with every release.
 Every push to `main` starts the [Windows installer workflow](https://github.com/Nyxolir/mff-bot/actions/workflows/windows-release.yml).
 It builds a versioned installer, checks offline OCR and GUI startup, installs it
 into an isolated profile, verifies that reinstall and uninstall preserve user
-data, and then publishes a GitHub Release. The download link above always
-points to the newest successful release. Failed builds leave the previous
-working download in place. No manual ZIP upload is needed for routine fixes or
+data, and then publishes a GitHub Release containing the installer assets.
+Failed builds leave the previous successful release in place.
+No manual ZIP upload is needed for routine fixes or
 new trivia answers. See [installer/BUILDING.md](installer/BUILDING.md).
 
 ## BlueStacks instead of a fixed Nox setup
