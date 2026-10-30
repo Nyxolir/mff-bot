@@ -1,9 +1,13 @@
 # Local Windows installer builds
 
-Automatic installer publication was removed during GitHub Support review.
-The packaging source is retained for local development. Pushing source changes
-does not build an installer or publish a release. The user-facing setup guide
-describes running the bot from source.
+GitHub Support restored account access and confirmed that installers may be
+provided as Release assets on 30 October 2026. Direct installer-download links
+remain excluded from the README. Verified local artifacts may be uploaded
+manually with their matching source archive, build manifest and checksums.
+
+Automatic installer publication remains disabled pending clarification about
+the removed workflow. Pushing source changes does not build an installer or
+publish a release. The setup guide covers both the installer and source methods.
 
 ## What is included
 

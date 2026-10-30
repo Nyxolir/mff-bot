@@ -4,6 +4,28 @@ Modern version maintained by **Nyxolir**, based on the data, recognition
 templates and code of **tmarenko/mff_auto**. These instructions apply to the
 modern `app_gui.py` entry point, rather than the archived upstream controller.
 
+## Windows installer
+
+1. Open the repository's **Releases** section and select the latest release.
+2. Expand **Assets**, download **MFF-Bot-Setup.exe**, and run the installer.
+3. Open **MFF Bot** from the Start menu. The application starts idle.
+4. Configure BlueStacks using sections 2 and 3 below, then click
+   **Connect BlueStacks** in the bot and verify its preview before starting a queue.
+
+The installer bundles Python and English OCR. A separate Python, Node.js or
+Tesseract installation is not required for this method. BlueStacks and the game
+must be installed separately. The Windows x64 installer installs for the
+current user and is currently unsigned.
+
+Finish any active game run and stop the queue before installing an update.
+Installed settings, pending outcomes and custom trivia answers are stored
+separately under `%LOCALAPPDATA%\Nyxolir\MFFBot`; updates and uninstall preserve
+them. The release also includes the corresponding source, validation manifest
+and SHA-256 checksums.
+
+The remaining prerequisites and section 4 apply when running from source.
+BlueStacks setup and queue configuration apply to both installation methods.
+
 ## 1. Prerequisites for running from source
 
 - Windows x64 and Python 3.12, including the Python launcher (`py`).

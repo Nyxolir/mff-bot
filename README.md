@@ -10,12 +10,13 @@ Upstream and third-party license notices are preserved.
 
 ## Run on Windows
 
-Run the bot from source using [SETUP.md](SETUP.md). The guide covers Python,
-OCR, BlueStacks ADB, display settings and queue configuration.
+The Windows installer is available in this repository's Releases section.
+See [SETUP.md](SETUP.md) for installation, BlueStacks ADB, display settings and
+queue configuration, plus the alternative instructions for running from source.
 
 The app starts idle. Connect BlueStacks, verify the preview and choose your
 queue before starting it. Finish any active game run and stop the queue before
-updating the source. Preserve saved queues, pending outcomes and custom trivia
+updating. Preserve saved queues, pending outcomes and custom trivia
 answers when updating.
 
 ## BlueStacks instead of a fixed Nox setup
