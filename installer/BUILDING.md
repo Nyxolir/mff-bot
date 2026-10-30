@@ -1,15 +1,9 @@
-# Building and publishing Windows installers
+# Local Windows installer builds
 
-Routine maintenance is **edit, verify, commit and push to main**. The
-`Windows installer` GitHub Actions workflow handles packaging and release
-publication. No developer needs to zip the live bot folder or copy account
-configuration. Each successful run gets version `0.1.<workflow run number>`
-and publishes the same installer filename, so the README's latest-download
-link remains stable. Manual workflow dispatch can rebuild without a code edit.
-
-The previous successful release remains available if a new build fails. A
-retry can replace release assets only when its tag still identifies the same
-source commit. Concurrent runs cancel older in-progress builds.
+Automatic installer publication was removed during GitHub Support review.
+The packaging source is retained for local development. Pushing source changes
+does not build an installer or publish a release. The user-facing setup guide
+describes running the bot from source.
 
 ## What is included
 
@@ -49,19 +43,16 @@ directory for additional packaged-reader checks; CI does not receive these
 screenshots.
 
 Run the full local bot suite for shared runtime changes before pushing. Private
-screenshot fixtures are not in the repository, so the cloud installer workflow
-uses its offline synthetic OCR and installation tests rather than claiming to
-run the complete private regression suite.
+screenshot fixtures are not in the repository. A local packaging check does not
+replace the complete private regression suite.
 
 ## Dependency updates
 
 Update `requirements-build.txt`, `ocr/package.json` and its lockfile, or
 `runtime-inputs.json` deliberately, then run local checks and the installer
 test again. The English model has both compressed and uncompressed hashes.
-Keep licensing/source references current. Do not introduce secrets into the
-workflow; publication uses GitHub's repository-scoped `GITHUB_TOKEN` with
-`contents: write` and runs only for main pushes or an explicit dispatch.
+Keep licensing/source references current. Do not commit credentials, private
+configuration or locally generated build artifacts.
 
-The installed program is currently unsigned. Build signing can be added later
-using an appropriate signing service; the workflow does not disable security
-checks or ship a private signing key.
+Locally built installers are currently unsigned. No private signing key is
+included in the source.

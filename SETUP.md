@@ -4,25 +4,6 @@ Modern version maintained by **Nyxolir**, based on the data, recognition
 templates and code of **tmarenko/mff_auto**. These instructions apply to the
 modern `app_gui.py` entry point, rather than the archived upstream controller.
 
-## Recommended: use the installer
-
-1. [Download MFF-Bot-Setup.exe](https://github.com/Nyxolir/mff-bot/releases/latest/download/MFF-Bot-Setup.exe)
-   and run it. No Python, Node.js or Tesseract installation is needed.
-2. Configure BlueStacks and enable ADB using steps 2 and 3 below.
-3. Open **MFF Bot** from the Start menu, click **Connect BlueStacks**, check the
-   preview, and configure your queue using steps 5 and 6.
-
-The installer is for Windows x64. It installs for the current user without an
-administrator account. It does not include BlueStacks or the game. The app
-starts idle; installation never starts farming. Step 4 below is only needed
-when running directly from source.
-
-To update, finish any active in-game run, stop the queue and install the latest
-version over the previous one. Installed data stays under
-`%LOCALAPPDATA%\Nyxolir\MFFBot`, outside program files, and is preserved by
-updates and uninstall. The unsigned installer and matching SHA-256 checksums
-are published under GitHub Releases.
-
 ## 1. Prerequisites for running from source
 
 - Windows x64 and Python 3.12, including the Python launcher (`py`).
