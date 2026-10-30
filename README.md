@@ -137,8 +137,6 @@ See the [trivia setup notes](SETUP.md#missing-trivia-answers) for the file forma
 Source, test code, recognition templates and verified trivia additions are
 included. Credentials, local machine paths, saved queue/account state,
 diagnostics, raw screenshot fixtures and compiled binaries are excluded.
-Compiled installers are distributed through Releases rather than committed to
-the source tree.
 Screenshot tests require the private local fixture set and cannot all run from
 a fresh clone. The source's full test command is:
 
