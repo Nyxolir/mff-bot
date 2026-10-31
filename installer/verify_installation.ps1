@@ -35,11 +35,42 @@ $pendingHash = Get-SmokeHash $pending
 $answersHash = Get-SmokeHash $answers
 Install-SmokeCopy
 if ((Get-SmokeHash $pending) -ne $pendingHash -or (Get-SmokeHash $answers) -ne $answersHash) { throw 'Upgrade changed local user data' }
+# Exercise the real GUI -> copied helper -> silent installer -> offline check
+# -> restarted app flow. The synthetic queue records resume intent only; no
+# emulator is connected and the probe exits before any queue can start.
+[IO.File]::WriteAllText($pending,'{"pending":null,"updater_preservation_sentinel":true}')
+$pendingHash = Get-SmokeHash $pending
+$buildInfo = Join-Path $installPath '_internal/build-info.json'
+$versionInfo = Get-Content -LiteralPath $buildInfo -Raw | ConvertFrom-Json
+$updateVersion = $versionInfo.version
+$versionInfo.version = '0.0.0'
+[IO.File]::WriteAllText($buildInfo,($versionInfo | ConvertTo-Json))
+$updateRequest = Join-Path $base 'update-selftest-request.json'
+[IO.File]::WriteAllText($updateRequest,(@{version=$updateVersion;installer=[IO.Path]::GetFullPath($Installer);resume=$true} | ConvertTo-Json))
+$env:MFF_UPDATER_SELFTEST = '1'
+$handoff = Start-Process -FilePath $application -ArgumentList @('--update-self-test',('"' + $updateRequest + '"')) -WindowStyle Hidden -PassThru
+if (!$handoff.WaitForExit(90000) -or $handoff.ExitCode -ne 0) { throw 'Update GUI did not exit through its verified handoff' }
+$updateJob = Join-Path $smokeProfile ('.cache/updates/' + $updateVersion)
+$probe = Join-Path $updateJob 'resume-probe.json'
+$deadline = [DateTime]::UtcNow.AddSeconds(240)
+while (!(Test-Path -LiteralPath $probe) -and [DateTime]::UtcNow -lt $deadline) {
+    $resultFile = Join-Path $updateJob 'result.json'
+    if (Test-Path -LiteralPath $resultFile) {
+        $updateResult = Get-Content -LiteralPath $resultFile -Raw | ConvertFrom-Json
+        if ($updateResult.stage -eq 'failed') { throw ('Updater helper failed: ' + $updateResult.error) }
+    }
+    Start-Sleep -Milliseconds 250
+}
+if (!(Test-Path -LiteralPath $probe)) { throw 'Updated app did not return its resume probe' }
+$probeResult = Get-Content -LiteralPath $probe -Raw | ConvertFrom-Json
+if (!$probeResult.passed -or !$probeResult.resume -or !$probeResult.connected -or $probeResult.queue_index -ne 2 -or $probeResult.version -ne $updateVersion -or $probeResult.game_connected -or $probeResult.queue_started) { throw 'Updated app resume intent/version did not verify offline' }
+if ((Get-SmokeHash $pending) -ne $pendingHash -or (Get-SmokeHash $answers) -ne $answersHash) { throw 'Automatic update changed saved user data' }
+Remove-Item Env:MFF_UPDATER_SELFTEST
 $uninstaller = Join-Path $installPath 'unins000.exe'
 if (![IO.Path]::GetFullPath($uninstaller).StartsWith($installPath + [IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected uninstaller location' }
 $remove = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -WindowStyle Hidden -Wait -PassThru
 if ($remove.ExitCode -ne 0 -or (Test-Path -LiteralPath $application)) { throw 'Uninstall did not remove the installed application' }
 if ((Get-SmokeHash $pending) -ne $pendingHash -or (Get-SmokeHash $answers) -ne $answersHash) { throw 'Uninstall changed local user data' }
-$evidence = @{passed=$true;installed_ocr=$true;upgrade_preserved_pending=$true;upgrade_preserved_answers=$true;uninstall_preserved_data=$true;game_connected=$false}
+$evidence = @{passed=$true;installed_ocr=$true;upgrade_preserved_pending=$true;upgrade_preserved_answers=$true;uninstall_preserved_data=$true;automatic_update_handoff=$true;automatic_update_resume_intent=$true;automatic_update_preserved_data=$true;game_connected=$false}
 [IO.File]::WriteAllText((Join-Path $base 'installer-validation.json'),($evidence | ConvertTo-Json))
 $evidence | ConvertTo-Json -Compress

@@ -285,3 +285,42 @@ request. Installers remain Release assets; the README has no direct installer
 download link or workflow badge. Publication stages verified artifacts in a
 draft and promotes it only after upload succeeds. The previous latest release
 is retained if a build or upload fails.
+
+## October 31: automatic updates inside the installed app
+
+Installed builds now check stable GitHub Releases in a background worker at
+startup and every four hours. The updater pins the repository and asset names,
+requires the exact source revision and successful release validation, verifies
+manifest/installer SHA-256 digests and sizes, and atomically stages complete
+downloads. Network failures, cancellation, unsupported versions and failed
+checksums leave the current app running. Source checkouts keep their Git
+workflow and original data paths.
+
+Installation requires idle live evidence and no active task, submitted/held
+outcome, recovery, or saved pending state. The scheduler and preview pause for
+one read-only idle check. The app saves its settings and passes the selected
+queue and running/stopped intent through a single-use receipt. A small copied
+native helper waits for normal shutdown, rechecks the installer, refuses to
+force-close another app instance, runs the installer silently, verifies the
+new app offline, and reopens it. Failed installation/checks never authorize
+queue resumption; newly pending state also suppresses resume. Failed versions
+are excluded from automatic retries, with a manual retry available.
+
+Focused verification covers download corruption, foreign URLs, cancellation,
+stale/forged/duplicate receipts, queue selection, pending protection and save
+failures. Native helper tests cover successful parent-exit ordering,
+cancellation, missing authorization, installer modification, installation
+failure and a missing fresh app-check receipt. The full local installed-app
+handoff passed with an open bundled OCR worker, verified selected-queue/resume
+intent and preserved synthetic pending/custom-answer files through update and
+uninstall. It did not connect to the game. Final combined regression and CI
+results are recorded after publication verification.
+
+The complete shared-runtime regression run passed 628 tests in 443.319
+seconds. The isolated updater eligibility check was also verified on a
+navigable inactive Challenges page, allowing an answer-bank update while an
+unknown quiz question waits without a submitted answer; all 16 focused
+updater checks pass. The nine GUI update checks include cancelling/closing
+during a download or idle scan, without launching new game actions. The live
+source-run bot stayed on its existing state paths and continued normal
+Dispatch monitoring throughout validation.

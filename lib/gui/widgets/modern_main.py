@@ -31,6 +31,7 @@ from lib.gui.widgets.daily_board_check import DailyBoardCheck
 from lib.gui.widgets.zombie_controls import ZombieControls
 from lib.gui.widgets.converging_controls import ConvergingControls
 from lib.gui.widgets.emulator_recovery import EmulatorRecovery
+from lib.gui.widgets.app_update_controls import AppUpdateControls
 
 from lib.app_paths import data_root
 ROOT = data_root()
@@ -229,7 +230,7 @@ class ScanTask(QtCore.QThread):
             self.failed.emit(str(error))
 
 
-class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCache,ObjectiveCache,CompletionCache,StuckRecovery,DispatchSuppliesControls,WorldEventControls,ArenaControls,StoryControls,Appearance,UncertainReview,DailyBoardCheck,ZombieControls,ConvergingControls,EmulatorRecovery):
+class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCache,ObjectiveCache,CompletionCache,StuckRecovery,DispatchSuppliesControls,WorldEventControls,ArenaControls,StoryControls,Appearance,UncertainReview,DailyBoardCheck,ZombieControls,ConvergingControls,EmulatorRecovery,AppUpdateControls):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -322,6 +323,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         self.log('Build 2026-10-21: isolated ADB, active-instance ports, restored Arena recovery, reward-popup handling')
         self.log("Start Queue uses full boosted ticket batches. Combat skill controls remain shelved.")
         if self.world_event_state.cache_done_rejected:self.log('World Event: old unverified done flag ignored; fresh event-page checks are due')
+        self.init_app_updates()
 
     def _setup_controls(self):
         self.info_group.setTitle("Connection & farming status")
@@ -435,7 +437,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         except Exception as error: self.log(f"Could not load saved queues: {error}",True)
 
     def _save(self,*unused):
-        if self.loading: return
+        if self.loading: return False
         try:
             STATE.parent.mkdir(parents=True,exist_ok=True)
             data={"queues":self.queues,"mission_team":self.mission_team_spin_box.value(),
@@ -444,7 +446,8 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
             temporary=STATE.with_suffix(".tmp")
             temporary.write_text(json.dumps(data,indent=2),encoding="utf-8")
             temporary.replace(STATE)
-        except OSError as error:self.log(f"Could not save settings: {error}",True)
+            return True
+        except OSError as error:self.log(f"Could not save settings: {error}",True);return False
 
     def _populate(self):
         self.loading=True
@@ -716,7 +719,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         self.busy=True
         self.restart_game_button.setEnabled(False)
         self.statusBar().showMessage("Reading game screen…")
-        self.task=ScanTask(image,captured_at,live,resource_check=self.resource_active or self.queue_engine.running,reader_kind=reader_kind,home_probe=bool(getattr(self,'queue_fresh_pass',False) and self.queue_engine.pending))
+        self.task=ScanTask(image,captured_at,live,resource_check=self.resource_active or self.queue_engine.running or getattr(self,'update_quiescing',False),reader_kind=reader_kind,home_probe=bool(getattr(self,'queue_fresh_pass',False) and self.queue_engine.pending))
         self.task.result.connect(self.show_evidence)
         self.task.failed.connect(self.scan_failed)
         self.task.finished.connect(self.scan_finished)
@@ -759,6 +762,8 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
                 QtCore.QTimer.singleShot(1500,self.scan_live)
             return
         self.last_evidence=(evidence,captured_at,live)
+        if getattr(self,'update_quiescing',False):
+            self.update_observation=(evidence,captured_at,live);return
         if live and self.adb_backend is not None:
             self.adb_backend.input_evidence=dict(screen=evidence.screen,mode=self.queue_target,phase=self.queue_phase,captured_at=captured_at.isoformat(),pending=list(self.queue_engine.pending) if self.queue_engine.pending else None,repeat_ended=self.zombie_repeat_finished if self.zombie_protected() else self.arena_repeat_finished)
         # Preserve separate live evidence for each mode and screen. These are
@@ -1179,6 +1184,10 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         self.render_queue_status()
 
     def toggle_queue(self):
+        if getattr(self,'update_quiescing',False):
+            if self.queue_engine.running:self.stop_queue()
+            else:self.cancel_update_handoff('Update cancelled by user')
+            return
         if self.queue_engine.running:
             self.stop_queue();return
         if self.busy or self.resource_active or self.objective_active or self.trivia_active:
@@ -1286,6 +1295,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         self.menuBar.setEnabled(enabled)
 
     def stop_queue(self):
+        if getattr(self,'update_quiescing',False) and not self.update_committing:self.cancel_update_handoff('Stopped by user; installation deferred')
         self.board_check_active=False
         self.emulator_capture_failed_since=None
         self.review_mode=None
@@ -1320,6 +1330,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         self.statusBar().showMessage("Running — "+reason)
 
     def queue_tick(self):
+        if getattr(self,'update_quiescing',False):return
         if self.emulator_recovering():return
         if getattr(self,'restart_task',None) and self.restart_task.isRunning():return
         if not self.queue_engine.running or self.busy or self.resource_active or self.objective_active or self.trivia_active:return
@@ -1459,6 +1470,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
         self.queue_observation=None
 
     def advance_queue(self):
+        if getattr(self,'update_quiescing',False):return
         if not self.queue_engine.running or self.resource_active or not self.queue_observation:return
         evidence,observed=self.queue_observation
         self.queue_observation=None
@@ -2038,6 +2050,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
             "Start Queue keeps energy farming active until Stop Queue. Combat skill controls remain shelved.")
 
     def closeEvent(self,event):
+        if hasattr(self,'update_timer') and not self.update_close_allowed():event.ignore();return
         if self.emulator_recovering():
             self.stop_queue();self.close_after_capture=True
             self.timer.stop();self.queue_timer.stop();event.ignore();return

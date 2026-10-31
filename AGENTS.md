@@ -1,5 +1,7 @@
 # Bot repair and verification
 
+In-app updates (October 31): installed builds check verified stable GitHub Releases in the background, then use the copied native helper only at a verified idle boundary. Preserve saved and live submissions, held outcomes, selected queue and running/stopped intent. Never force-close the app, BlueStacks or a battle to apply an update. Source checkouts remain on Git and retain their original state paths. Verify updater failures and the real installed GUI/helper/installer/restart flow using isolated profiles without connecting to the game. Keep updater state and downloaded artifacts private. A failed update must not resume a queue or retry the same failed version automatically.
+
 ## GitHub synchronization and identity
 
 After adding verified trivia answers or making bot changes, commit and push the relevant source, knowledge-bank, documentation and test changes to `https://github.com/Nyxolir/mff-bot` on `main`, then verify the remote commit. Use **Nyxolir** as the creator and Git author/committer, with the repository's no-reply email. Preserve upstream and third-party attribution. Do not upload personal names or machine-specific user paths, credentials, diagnostics, raw screenshot fixtures, saved queue/account state or pending submissions. Keep the existing ignore rules; never force-add private runtime files. Run checks appropriate to each change before publishing; shared reader/controller changes require the full suite below. If verification or pushing fails, report what remains local instead of claiming GitHub is updated.

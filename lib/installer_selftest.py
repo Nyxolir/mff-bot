@@ -11,6 +11,9 @@ def run_self_test(window,report_path):
     from lib.ocr import recognize_with_js,_js_session,js_runtime
     from lib.trivia import lookup_answer
     root=resource_root()
+    from lib.app_updates import installed_version
+    assert installed_version() is not None
+    assert (root/'updater/MFF Bot Update Helper.exe').is_file()
     assert not window.queue_engine.running and window.handle is None
     assert (root/'images/current/trivia_start_button.png').is_file()
     assert (root/'ocr/tessdata/eng.traineddata').is_file()
@@ -44,3 +47,34 @@ def run_self_test(window,report_path):
     report={'passed':True,'gui_constructed':True,'offline_ocr':text.strip(),'bundled_answers':True,'per_user_state':True,'private_fixture_checks':fixture_checks,'queue_started':False,'game_connected':False}
     Path(report_path).write_text(json.dumps(report,indent=2),encoding='utf-8')
     return 0
+
+
+def run_update_self_test(window,request_path):
+    """Exercise the installed GUI/helper/installer handoff with synthetic state only."""
+    import os
+    from PyQt5 import QtCore
+    from lib.app_updates import installed_version,sha256,INSTALLER
+    import shutil
+    from lib.app_paths import data_root,resource_root
+    if os.environ.get('MFF_UPDATER_SELFTEST')!='1' or not os.environ.get('MFF_DATA_DIR'):
+        raise ValueError('Updater self-test requires an isolated profile')
+    request=json.loads(Path(request_path).read_text(encoding='utf-8-sig'))
+    assert window.handle is None and not window.queue_engine.running
+    # Leave the real bundled OCR worker open: normal app shutdown must release
+    # its executable before the installer replaces the installed Node runtime.
+    from PIL import Image,ImageDraw,ImageFont
+    import numpy as np
+    from lib.ocr import recognize_with_js
+    sample=Image.new('RGB',(600,90),'white')
+    ImageDraw.Draw(sample).text((20,12),'DAILY TRIVIA',font=ImageFont.truetype(str(Path(os.environ['WINDIR'])/'Fonts/arial.ttf'),40),fill='black')
+    assert recognize_with_js(np.asarray(sample),'ABCDEFGHIJKLMNOPQRSTUVWXYZ ',7).strip()=='DAILY TRIVIA'
+    version=request['version'];cache=data_root()/'.cache/updates'/version;cache.mkdir(parents=True,exist_ok=True)
+    target=cache/INSTALLER;shutil.copyfile(request['installer'],target)
+    window.update_candidate={'version':version,'installer':str(target),'sha256':sha256(target)}
+    window.queue_index=2;window._populate()
+    # Synthetic running state tests resume intent without starting a game queue.
+    # All real inputs remain unavailable: there is no emulator connection.
+    if request.get('resume'):window.queue_engine.running=True
+    window.timer.stop();window.queue_timer.stop()
+    window.update_timer.start(100)
+    window.update_tick()

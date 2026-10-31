@@ -26,6 +26,31 @@ and SHA-256 checksums.
 The remaining prerequisites and section 4 apply when running from source.
 BlueStacks setup and queue configuration apply to both installation methods.
 
+### Automatic app updates
+
+Install the updater-enabled release once using the installer. Installed copies
+then check for newer stable releases shortly after startup and every four
+hours. No GitHub account or extra updater installation is required. The
+**Updates** menu shows the installed version, **Automatic updates** preference
+and **Check for updates now**. Automatic updates are enabled by default.
+
+The app downloads in the background and verifies the release manifest and
+installer SHA-256 digest. Installation waits for a verified idle screen with
+no active content, pending result, saved submission or held outcome. The
+**Cancel update** button postpones a pending installation. The app saves its
+settings, closes normally, installs without restarting Windows, verifies the
+new app offline, and reopens with the same queue selected. A running queue
+resumes; a stopped queue stays stopped. New unresolved state prevents resume.
+BlueStacks and the game are left running.
+
+Downloads that fail leave the current app running. Failed installations reopen
+the app with its queue stopped where possible, and the same failed version is
+not attempted automatically again. **Check for updates now** allows an explicit
+retry. Logs and the private update receipt remain in the app's data directory.
+
+Source checkouts continue to use Git for code updates; the installer updater
+does not switch their state directory or overwrite the working checkout.
+
 ## 1. Prerequisites for running from source
 
 - Windows x64 and Python 3.12, including the Python launcher (`py`).

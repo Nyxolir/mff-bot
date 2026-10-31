@@ -12,6 +12,87 @@ from lib.objectives import MissionPlan
 
 
 class QueueGuiTests(unittest.TestCase):
+    def test_closing_during_update_idle_scan_cancels_and_closes_after_scan(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;w.queue_engine.start(datetime.now(timezone.utc));w.update_candidate={'version':'0.1.99'}
+        with patch.object(updates,'saved_update_blocker',return_value=None):w.update_tick()
+        w.busy=True
+        with patch.object(updates.QtCore.QTimer,'singleShot') as retry:
+            self.assertFalse(w.update_close_allowed());retry.assert_called_once()
+        self.assertFalse(w.queue_engine.running);self.assertFalse(w.update_quiescing)
+        w.busy=False;self.assertTrue(w.update_close_allowed())
+
+    def test_closing_during_an_update_download_stops_queue_before_waiting_for_worker(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;w.queue_engine.start(datetime.now(timezone.utc));worker=Mock();worker.isRunning.return_value=True;w.update_worker=worker
+        with patch.object(updates.QtCore.QTimer,'singleShot'):
+            self.assertFalse(w.update_close_allowed())
+        self.assertFalse(w.queue_engine.running);worker.requestInterruption.assert_called_once();self.assertTrue(w.update_closing)
+        worker.isRunning.return_value=False
+
+    def test_cancel_update_button_stops_previously_running_queue(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;w.queue_engine.start(datetime.now(timezone.utc));w.update_candidate={'version':'0.1.99'}
+        with patch.object(updates,'saved_update_blocker',return_value=None):w.update_tick()
+        self.assertIn('Stop Queue',w.run_queue_button.text());w.toggle_queue()
+        self.assertFalse(w.update_quiescing);self.assertFalse(w.queue_engine.running)
+
+    def test_app_update_waits_for_active_and_saved_submissions(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;w.update_candidate={'version':'0.1.99'}
+        pending=(gui.reset_period(datetime.now(timezone.utc)),'DIMENSION MISSION',10)
+        with patch.object(updates,'saved_update_blocker',return_value=None),patch.object(updates,'prepare_handoff') as prepare:
+            w.queue_engine.pending=pending;w.update_tick();self.assertFalse(w.update_quiescing)
+            w.queue_engine.pending=None;w.world_event_state.started=True;w.update_tick();self.assertFalse(w.update_quiescing)
+            w.world_event_state.started=False;w.queue_target='STORY ULTIMATE';w.update_tick();self.assertFalse(w.update_quiescing)
+            w.queue_target=None;w.queue_held={'TIMELINE BATTLE'};w.update_tick();self.assertFalse(w.update_quiescing)
+            w.queue_held=set()
+            with patch.object(updates,'saved_update_blocker',return_value='saved pending outcome'):
+                w.update_tick();self.assertFalse(w.update_quiescing)
+            prepare.assert_not_called()
+
+    def test_app_update_quiesces_then_verifies_idle_without_game_input_and_preserves_queue(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now)
+        w.queue_index=2;w.update_candidate={'version':'0.1.99'}
+        w._save.return_value=True
+        directory=Path(self.log_directory.name);path=directory/'handoff.json'
+        plan={'token':'a'*32,'version':'0.1.99','resume':True}
+        with patch.object(updates,'saved_update_blocker',return_value=None),patch.object(updates,'prepare_handoff',return_value=(path,directory/'helper.exe',plan)) as prepare,patch.object(updates.subprocess,'Popen'),patch.object(gui,'click_game_point') as click,patch.object(w,'close') as close:
+            w.update_tick();self.assertTrue(w.update_quiescing);w.scan_live.assert_called_once()
+            w.queue_tick();w.show_evidence(ScreenEvidence('game_home'),now,True);w.advance_queue();click.assert_not_called()
+            w.update_tick()
+            self.assertEqual(prepare.call_args.args[1:3],(True,True));self.assertEqual(prepare.call_args.kwargs['queue_index'],2)
+            updates.atomic_json(directory/'ready.json',{'token':plan['token'],'stage':'waiting_for_app'})
+            w.update_tick();close.assert_called_once();self.assertTrue(w.update_committing)
+            self.assertEqual(__import__('json').loads((directory/'commit.json').read_text())['token'],plan['token'])
+            click.assert_not_called()
+
+    def test_app_update_save_failure_keeps_current_app_and_queue_running(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now)
+        w.handle=None;w.update_candidate={'version':'0.1.99'};w._save.return_value=False
+        w.update_config_path=Path(self.log_directory.name)/'updates.json'
+        with patch.object(updates,'saved_update_blocker',return_value=None),patch.object(updates,'prepare_handoff') as prepare:
+            w.update_tick();w.update_tick();prepare.assert_not_called()
+        self.assertFalse(w.update_quiescing);self.assertTrue(w.queue_engine.running)
+        self.assertEqual(w.update_config['failed_version'],'0.1.99')
+
+    def test_app_update_user_stop_cancels_handoff_and_cannot_resume_queue(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now)
+        w.update_candidate={'version':'0.1.99'}
+        with patch.object(updates,'saved_update_blocker',return_value=None):w.update_tick()
+        self.assertTrue(w.update_quiescing);w.stop_queue()
+        self.assertFalse(w.update_quiescing);self.assertIsNone(w.update_candidate);self.assertFalse(w.queue_engine.running)
+
+    def test_app_update_unknown_or_saved_screen_cannot_launch_helper(self):
+        from lib.gui.widgets import app_update_controls as updates
+        w=self.window;now=datetime.now(timezone.utc);w.update_candidate={'version':'0.1.99'}
+        with patch.object(updates,'saved_update_blocker',return_value=None),patch.object(updates,'prepare_handoff') as prepare:
+            w.update_tick();w.show_evidence(ScreenEvidence('unknown'),now,True);w.update_tick()
+            prepare.assert_not_called();self.assertFalse(w.update_quiescing)
+
     def test_world_event_zero_recheck_finishes_before_startup_board_preflight(self):
         w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
         w.enable_board_preflight=True;w.board_check_due=True;w.board_check_active=False

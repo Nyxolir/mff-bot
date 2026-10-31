@@ -130,12 +130,19 @@ def main(argv=None):
     if any(int(n)>65535 for n in args.version.split('.')):parser.error('Version fields must fit Windows version resources')
     work_parent=ROOT/'build';work_parent.mkdir(exist_ok=True)
     stage=Path(tempfile.mkdtemp(prefix='installer-',dir=work_parent))
+    update_helper=stage/'updater';update_helper.mkdir()
+    compiler=Path(os.environ['WINDIR'])/'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
+    run(compiler,'/nologo','/target:winexe','/platform:x64','/reference:System.Web.Extensions.dll',
+        '/out:'+str(update_helper/'MFF Bot Update Helper.exe'),ROOT/'installer/UpdateHelper.cs')
+    run(sys.executable,ROOT/'installer/verify_update_helper.py',update_helper/'MFF Bot Update Helper.exe',stage/'helper-checks')
+    build_info=stage/'build-info.json'
+    build_info.write_text(json.dumps({'version':args.version,'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()}),encoding='utf-8')
     output=args.output.resolve();output.mkdir(parents=True,exist_ok=True)
     ocr=stage/'ocr';packages=copy_ocr(args.node.resolve(),args.node_modules.resolve(),args.model.resolve(),ocr)
     licenses=stage/'licenses';make_licenses(licenses)
     info=stage/'version-info.txt';version_info(args.version,info)
     command=[sys.executable,'-m','PyInstaller','--noconfirm','--onedir','--windowed','--name','MFF Bot','--icon',str(ROOT/'icon.ico'),'--version-file',str(info),'--runtime-hook',str(ROOT/'installer/runtime_hook.py'),'--distpath',str(stage/'dist'),'--workpath',str(stage/'pyinstaller'),'--specpath',str(stage),'--paths',str(ROOT),'--collect-all','autoit','--collect-all','multiprocess','--hidden-import','win32timezone']
-    for source,dest in [(ROOT/'images','images'),(ROOT/'icon.ico','.'),(ROOT/'scripts','scripts'),(ROOT/'settings/gui/trivia-answers.json','settings/gui'),(ocr,'ocr'),(licenses,'licenses'),(ROOT/'README.md','.'),(ROOT/'SETUP.md','.'),(ROOT/'installer/QUICK-START.txt','.')]:
+    for source,dest in [(ROOT/'images','images'),(ROOT/'icon.ico','.'),(ROOT/'scripts','scripts'),(ROOT/'settings/gui/trivia-answers.json','settings/gui'),(ocr,'ocr'),(licenses,'licenses'),(ROOT/'README.md','.'),(ROOT/'SETUP.md','.'),(ROOT/'installer/QUICK-START.txt','.'),(update_helper,'updater'),(build_info,'.')]:
         command.extend(['--add-data',str(source)+os.pathsep+dest])
     command.append(str(ROOT/'app_gui.py'));run(*command,cwd=ROOT)
     bundle=stage/'dist/MFF Bot';audit_bundle(bundle)
@@ -146,7 +153,7 @@ def main(argv=None):
     run(args.iscc,'/Qp','/DAppVersion='+args.version,'/DBundleDir='+str(bundle),'/DOutputDir='+str(output),ROOT/'installer/mff-bot.iss',cwd=ROOT)
     installer=output/'MFF-Bot-Setup.exe';assert installer.is_file()
     audit_identity([installer])
-    run('powershell.exe','-NoProfile','-File',ROOT/'installer/verify_installation.ps1','-Installer',installer,'-WorkRoot',stage/'installed-smoke',cwd=ROOT,timeout=300)
+    run('powershell.exe','-NoProfile','-File',ROOT/'installer/verify_installation.ps1','-Installer',installer,'-WorkRoot',stage/'installed-smoke',cwd=ROOT,timeout=540)
     installation=json.loads((stage/'installed-smoke/installer-validation.json').read_text(encoding='utf-8-sig'));assert installation['passed']
     source_files=subprocess.check_output(['git','ls-files','-z'],cwd=ROOT).decode().split('\0')[:-1]
     for name in source_files:

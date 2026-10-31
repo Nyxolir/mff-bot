@@ -16,18 +16,48 @@ def main():
         import ctypes
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('MFFAuto.Farming.Desktop')
     window = ModernMainWindow()
+    if '--update-result' in sys.argv:
+        try:
+            from lib.app_updates import consume_update_result
+            receipt=consume_update_result(sys.argv[sys.argv.index('--update-result')+1])
+            window.queue_index=receipt['queue_index'];window._populate()
+            window.handle_update_receipt(receipt)
+        except Exception as error:
+            receipt={'success':False,'resume':False,'connected':False,'minimized':False}
+            window.log('Update resume receipt rejected; queue remains stopped: '+str(error),True)
+    else:receipt=None
     if '--self-test' in sys.argv:
         from lib.installer_selftest import run_self_test
         result=run_self_test(window,sys.argv[sys.argv.index('--self-test')+1])
         window.close()
         return result
+    if '--update-self-test' in sys.argv:
+        from lib.installer_selftest import run_update_self_test
+        window.show()
+        def start_update_selftest():
+            try:run_update_self_test(window,sys.argv[sys.argv.index('--update-self-test')+1])
+            except Exception as error:
+                window.log('Updater self-test failed: '+str(error),True);app.exit(1)
+        QtCore.QTimer.singleShot(0,start_update_selftest)
+        return app.exec_()
+    if '--update-probe' in sys.argv:
+        import json
+        from pathlib import Path
+        from lib.app_updates import installed_version
+        if os.environ.get('MFF_UPDATER_SELFTEST')!='1' or not os.environ.get('MFF_DATA_DIR'):
+            raise ValueError('Update probe requires an isolated installer test profile')
+        Path(sys.argv[sys.argv.index('--update-probe')+1]).write_text(json.dumps({'passed':bool(receipt and receipt['success']),
+            'resume':bool(receipt and receipt['resume']),'connected':bool(receipt and receipt['connected']),
+            'queue_index':window.queue_index,
+            'version':installed_version(),'queue_started':window.queue_engine.running,'game_connected':window.handle is not None}))
+        window.close();return 0
     if '--trivia' in sys.argv:
         from datetime import datetime,timezone
         window.trivia_retry_at=datetime.now(timezone.utc)
-    window.start_queue_after_connect='--start-queue' in sys.argv
-    if '--minimized' in sys.argv:window.showMinimized()
+    window.start_queue_after_connect=receipt['resume'] if receipt else '--start-queue' in sys.argv
+    if '--minimized' in sys.argv or (receipt and receipt['minimized']):window.showMinimized()
     else:window.show()
-    if '--connect' in sys.argv or window.start_queue_after_connect:
+    if ('--connect' in sys.argv and not receipt) or window.start_queue_after_connect or (receipt and receipt['connected']):
         QtCore.QTimer.singleShot(0,window.connect_emulator)
     return app.exec_()
 
@@ -60,7 +90,7 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
     import multiprocess
     multiprocess.freeze_support()
-    if '--self-test' in sys.argv:
+    if any(flag in sys.argv for flag in ('--self-test','--update-self-test','--update-probe')):
         os.environ['QT_QPA_PLATFORM']='offscreen'
     suppress_qt_warnings()
     try:

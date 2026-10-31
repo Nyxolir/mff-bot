@@ -11,6 +11,13 @@ Settings and pending outcomes are kept separately under
 `%LOCALAPPDATA%\Nyxolir\MFFBot` and preserved during updates and uninstall.
 Stop the queue and finish any active game run before updating.
 
+This version adds automatic in-app updates. Install this release once; later
+stable releases download automatically and install only at a verified idle
+boundary. The Updates menu includes an opt-out and manual check. Settings,
+answers, completion state and queue selection are preserved. A stopped queue
+stays stopped; a previously running queue resumes after offline verification.
+Downloads or updates that fail never authorize replaying a submitted game action.
+
 Priorities: early trivia at safe boundaries; fresh objective checks; GBR reward
 clearance before boosted farming; required Dimension clears/contribution ahead
 of other boosted content. Missing trivia answers are not guessed.

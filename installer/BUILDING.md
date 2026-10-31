@@ -12,6 +12,13 @@ assets. A draft stages all assets before becoming the latest release; failed
 builds retain the previous latest release. Manual runs are also available.
 README.md contains no direct installer-download link, badge or workflow link.
 
+The build also compiles the small native update helper. Isolated fake-app tests
+verify parent-exit ordering, cancellation, missing authorization, modified
+installers and installation failures. The installed-app test exercises the
+actual GUI handoff, silent installer, offline verification and restarted-app
+receipt, including selected-queue and running-state restoration. It records
+resume intent without connecting to BlueStacks or starting a game queue.
+
 ## What is included
 
 - Frozen Python 3.12 application and required libraries.
