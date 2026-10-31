@@ -14,6 +14,7 @@ class WorldEventControls:
         self.world_event_generation=self.queue_engine.generation;self.world_event_resume=self.queue_wake
         self.world_event_waiting=None;self.queue_phase='world_event';self.queue_wake=None;self.queue_waiting=None
         self.world_event_visit=0;self.world_event_state.reset_zero_verification()
+        self.world_event_state.lobby_reconciliation=None
         self.world_event_board_unavailable=False
         self.epic_preparation=None;self.world_event_auto_clicked=False;self.world_event_unknown_since=None;self.world_event_home_scrolls=0;self.world_event_tab_attempts=0
         self.log('Checking World Event: auto participation until daily entries show 0/2')
@@ -41,6 +42,7 @@ class WorldEventControls:
                 raise ValueError('check timed out; deferred without repeating an entry')
             self.world_event_steps+=1
             screen=evidence.screen;v=evidence.values
+            if screen!='we_lobby':state.lobby_reconciliation=None
             if self.world_event_waiting:
                 expected,stamp=self.world_event_waiting
                 if screen not in expected:
@@ -50,8 +52,23 @@ class WorldEventControls:
             if evidence.errors:raise ValueError('; '.join(evidence.errors))
             if screen in ('we_lobby','we_closed'):
                 if state.started:
-                    self.queue_wake=now+timedelta(seconds=5);return
-                decision=state.lobby(v,now,observed=observed,visit=self.world_event_visit);state.save()
+                    if screen!='we_lobby' or not state.reconcile_started_lobby(v,now,observed):
+                        self.queue_wake=now+timedelta(seconds=5);return
+                    # Persist the end of gameplay before allowing page refreshes.
+                    state.started=False
+                    try:state.save()
+                    except OSError:
+                        state.started=True
+                        raise
+                    self.log('World Event: consumed-entry lobby stable for 60 seconds; submitted run reconciled, checking daily completion')
+                # A failed completion save must retain the submission in memory
+                # as well as on disk. No navigation is permitted before saving.
+                previous=(state.pending,state.started,state.done,state.completion_proof,state.next_check)
+                decision=state.lobby(v,now,observed=observed,visit=self.world_event_visit)
+                try:state.save()
+                except OSError:
+                    state.pending,state.started,state.done,state.completion_proof,state.next_check=previous
+                    raise
                 if decision=='recheck_zero':
                     self.log('World Event: 0/2 candidate '+str(len(state.zero_observations))+'/3; reopening the event page to refresh cached entries')
                     self.world_event_board_unavailable=True
@@ -70,7 +87,9 @@ class WorldEventControls:
                 if state.slot_until is None:state.slot_until=now+timedelta(hours=6)
                 state.save();click(v['point'],('we_start',));return
             if screen=='we_start':
-                if not state.pending or state.started:raise ValueError('Start lacks a fresh, unsubmitted entry confirmation')
+                if state.pending and state.started:
+                    self.queue_wake=now+timedelta(seconds=5);return
+                if not state.pending:raise ValueError('Start lacks a fresh, unsubmitted entry confirmation')
                 state.started=True;state.save();click(v['point']);return
             if screen=='we_battle':
                 if not v['auto_on'] and not self.world_event_auto_clicked:
@@ -115,6 +134,8 @@ class WorldEventControls:
             if v.get('menu_available'):click((1249,36),('navigation_menu',));return
             raise ValueError('screen not recognized')
         except Exception as error:
+            if state.pending or state.started:
+                self.stop_queue();self.log('World Event: '+str(error)+'; submitted outcome preserved without restart or replay',True);return
             state.next_check=now+timedelta(minutes=5)
             self.finish_world_event(str(error))
             if self.queue_engine.running:

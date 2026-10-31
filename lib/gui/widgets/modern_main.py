@@ -1346,6 +1346,7 @@ class ModernMainWindow(QtWidgets.QMainWindow,Ui_MainWindow,TriviaControls,GbrCac
             self.check_trivia(automatic=True);return
         if (getattr(self,'enable_board_preflight',True) and not self.queue_engine.pending
                 and not self.queue_recovering and not self.session_reload_deadline
+                and not self.world_event_active
                 and not self.story_restart_protected() and not self.world_event_state.started
                 and (self.board_check_active or (self.board_check_due and self.queue_target is None))):
             if not self.board_check_active:self.start_daily_board_check(now)

@@ -27,6 +27,12 @@ QUIZLET_ALIASES={
 # Confirmed displayed answers on the live account, 2026-10-19, 2026-10-22 and 2026-10-24. These newer
 # questions are absent from the supplied 58-card set.
 GAME_ANSWERS={
+    # Correct result verified in the live quiz on 2026-10-31.
+    # https://staging.marvelsnap.com/character-spotlight-beta-ray-bill/
+    'Which hero of the Korbinite race uses the Stormbreaker?':'Beta Ray Bill',
+    # https://www.marvel.com/characters/iron-man-tony-stark/in-comics
+    'Which of the following is the name of the illness that Tony Stark suffered from?':'Alcoholism',
+    'What item can provide special effects that only apply to certain contents?':'Emblems',
     # Live question Oct 25; https://www.marvel.com/comics/discover/2258/elektras-
     "What's the name of Daredevil's lover who becomes the second Daredevil?":'Elektra',
     # Correct results verified in the live quiz on 2026-10-24.

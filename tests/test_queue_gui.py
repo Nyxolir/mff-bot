@@ -12,6 +12,93 @@ from lib.objectives import MissionPlan
 
 
 class QueueGuiTests(unittest.TestCase):
+    def test_world_event_zero_recheck_finishes_before_startup_board_preflight(self):
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
+        w.enable_board_preflight=True;w.board_check_due=True;w.board_check_active=False
+        state=w.world_event_state;state.pending=True;state.started=False;state.before=1
+        state.zero_observations=[(0,now-timedelta(seconds=5))]
+        w.world_event_waiting=(('we_home','game_home'),now);w.queue_wake=None
+        w.queue_tick()
+        self.assertFalse(w.board_check_active);self.assertTrue(w.board_check_due)
+        self.assertTrue(w.world_event_active);self.assertEqual(w.queue_phase,'world_event')
+        self.assertEqual(w.world_event_waiting,(('we_home','game_home'),now))
+        self.assertEqual(len(state.zero_observations),1);self.assertTrue(state.pending)
+        w.scan_live.assert_called_once()
+
+    def test_world_event_delayed_start_frame_never_repeats_or_recovers(self):
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
+        state=w.world_event_state;state.pending=True;state.before=1
+        with patch('lib.gui.widgets.world_event_controls.click_game_point') as click:
+            e=ScreenEvidence('we_start',{'point':(1034,674)})
+            w.queue_world_event(e,now);w.queue_world_event(e,now)
+            self.assertEqual(click.call_count,1)
+        self.assertTrue(state.pending);self.assertTrue(state.started);self.assertTrue(w.world_event_active)
+        self.assertFalse(w.queue_recovering);self.assertTrue(w.queue_engine.running)
+
+    def test_world_event_orphaned_start_reconciles_live_zero_then_schedules_next_task(self):
+        from lib.gui.widgets import world_event_controls as controls
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
+        state=w.world_event_state;state.pending=True;state.started=True;state.before=1
+        w.queues[0]=[{'mode':'WORLD EVENT','enabled':True},{'mode':'CUTTING CABLE','enabled':True}]
+        e,_,_=self.scan_fixture('world_event_zero_latched_oct31.png',reader_kind='world_event')
+        class Clock(datetime):
+            @classmethod
+            def now(cls,tz=None):return cls.current
+        Clock.current=now
+        with patch.object(controls,'datetime',Clock),patch.object(gui,'datetime',Clock),patch('lib.gui.widgets.world_event_controls.click_game_point') as click:
+            for second in range(0,61,5):
+                stamp=now+timedelta(seconds=second);Clock.current=stamp
+                w.show_evidence(e,stamp,True);w.advance_queue()
+                if second<60:click.assert_not_called();self.assertTrue(state.started)
+            self.assertFalse(state.started);self.assertTrue(state.pending);self.assertFalse(state.done)
+            self.assertEqual(click.call_args.args,(11,1185,36))
+            for second in (65,75):
+                stamp=now+timedelta(seconds=second);Clock.current=stamp
+                w.queue_world_event(ScreenEvidence('we_home',{'event_point':(1040,510),'battle_tab':True}),stamp)
+                stamp+=timedelta(seconds=5);Clock.current=stamp;w.queue_world_event(e,stamp)
+        self.assertFalse(w.world_event_active);self.assertFalse(state.pending);self.assertTrue(state.done)
+        self.assertEqual(len(state.completion_proof['observations']),3)
+        self.assertTrue(state.valid_completion_proof(state.completion_proof,now+timedelta(seconds=85)))
+        self.clear_gbr(now);w.queue_wake=None;w.queue_tick()
+        self.assertEqual(w.queue_target,'CUTTING CABLE')
+
+    def test_world_event_reconciliation_save_failure_preserves_started_without_input(self):
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
+        state=w.world_event_state;state.pending=True;state.started=True;state.before=1
+        e,_,_=self.scan_fixture('world_event_zero_latched_oct31.png',reader_kind='world_event')
+        state.lobby_reconciliation=((0,2,0,True),now-timedelta(seconds=60),now-timedelta(seconds=5),12)
+        with patch.object(state,'save',side_effect=OSError('disk full')),patch('lib.gui.widgets.world_event_controls.click_game_point') as click:
+            w.queue_world_event(e,now);click.assert_not_called()
+        self.assertFalse(w.queue_engine.running);self.assertTrue(state.started);self.assertTrue(state.pending);self.assertFalse(state.done)
+
+    def test_world_event_completion_save_failure_restores_submission_and_stops(self):
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
+        state=w.world_event_state;state.pending=True;state.before=1
+        state.zero_observations=[(0,now-timedelta(seconds=20)),(1,now-timedelta(seconds=10))];w.world_event_visit=2
+        e,_,_=self.scan_fixture('world_event_zero_latched_oct31.png',reader_kind='world_event')
+        with patch.object(state,'save',side_effect=OSError('disk full')),patch('lib.gui.widgets.world_event_controls.click_game_point') as click:
+            w.queue_world_event(e,now);click.assert_not_called()
+        self.assertFalse(w.queue_engine.running);self.assertTrue(state.pending);self.assertFalse(state.done)
+
+    def test_world_event_battle_or_wrong_screen_discards_partial_lobby_reconciliation(self):
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now);w.start_world_event(now)
+        state=w.world_event_state;state.pending=True;state.started=True;state.before=1
+        for evidence in (ScreenEvidence('we_battle',{'auto_on':True}),ScreenEvidence('otherworld',{'entries':(0,2)})):
+            state.lobby_reconciliation=((0,2,0,True),now-timedelta(seconds=55),now,12)
+            with patch('lib.gui.widgets.world_event_controls.click_game_point') as click:
+                w.queue_world_event(evidence,now);click.assert_not_called()
+            self.assertIsNone(state.lobby_reconciliation);self.assertTrue(state.pending);self.assertTrue(state.started);self.assertFalse(state.done)
+            if not w.queue_engine.running:w.queue_engine.start(now);w.start_world_event(now)
+
+    def test_world_event_submission_blocks_generic_restart_and_recovery(self):
+        w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now)
+        w.world_event_state.pending=True;w.world_event_state.started=True;w.world_event_state.before=1
+        w.adb_backend=Mock()
+        w.restart_stuck_game();w.adb_backend.restart_game.assert_not_called()
+        self.assertTrue(w.world_event_state.pending);self.assertFalse(w.queue_engine.running)
+        w.queue_engine.start(now);w.recover_stuck_queue('unrecognised')
+        self.assertTrue(w.world_event_state.started);self.assertFalse(w.queue_engine.running);self.assertFalse(w.queue_recovering)
+
     def test_live_max_level_pass_skips_to_next_source_and_keeps_dimension_plan(self):
         from lib.objectives import parse_objectives
         w=self.window;now=datetime.now(timezone.utc);w.queue_engine.start(now)

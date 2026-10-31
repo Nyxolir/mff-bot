@@ -55,7 +55,9 @@ class WorldEventReader:
             try:entries=parse_counter(text['entries']);score=number(text['score']);assert entries[1]==2
             except (ValueError,AssertionError):return ScreenEvidence(errors=['World Event daily entries/score unreadable'],text=text)
             ready=matches('we_lobby_ready',(970,650,1135,690))
-            return ScreenEvidence('we_lobby',{'entries':entries,'best_score':score,'available':ready,'delay':event_delay(text['timer']),'point':(1040,674)},text)
+            return ScreenEvidence('we_lobby',{'entries':entries,'best_score':score,'available':ready,
+                'lobby_controls_verified':matches('menu_icon',(1234,24,1265,50)),
+                'delay':event_delay(text['timer']),'point':(1040,674)},text)
         if title.startswith('READY') or matches('we_ready_title',(69,19,145,50)):
             setup=read_fields(image,[('caption',(18,653,600,676),'yellow_text'),('button',(970,650,1110,690),'button_text')])
             if canonical(setup['caption'])=='SELECTEDTEAMANDCHARACTERSCANBEUSEDINTHEWORLDEVENT':
@@ -92,6 +94,30 @@ class WorldEventState:
         self.period=reset_period(now);self.done=False;self.next_check=now
         self.pending=False;self.started=False;self.slot_until=None;self.before=None
         self.zero_observations=[];self.completion_proof=None;self.cache_done_rejected=False
+        self.lobby_reconciliation=None
+
+    def reconcile_started_lobby(self,values,now,observed):
+        """A settled, navigable page with consumed entries can release an orphaned start.
+
+        One zero frame never permits navigation. Keep the durable submission
+        until a continuous minute of distinct fresh lobby captures proves that
+        gameplay has ended; daily completion still needs three reopened visits.
+        """
+        remaining,total=values.get('entries',(None,None))
+        valid=(self.pending and self.started and self.before in (1,2)
+            and type(remaining) is int and type(total) is int and total==2 and 0<=remaining<self.before
+            and values.get('lobby_controls_verified') is True
+            and observed.tzinfo is not None and timedelta(0)<=now-observed<=timedelta(seconds=30)
+            and reset_period(observed)==self.period==reset_period(now))
+        if not valid:self.lobby_reconciliation=None;return False
+        signature=(remaining,total,values.get('best_score'),values.get('available'))
+        candidate=self.lobby_reconciliation
+        if candidate is None or candidate[0]!=signature or observed-candidate[2]>timedelta(seconds=15):
+            self.lobby_reconciliation=(signature,observed,observed,1);return False
+        signature,first,last,count=candidate
+        if observed<=last:return False
+        self.lobby_reconciliation=(signature,first,observed,count+1)
+        return observed-first>=timedelta(seconds=60) and count+1>=4
 
     def rollover(self,now):
         if self.period!=reset_period(now):self.__init__(now)

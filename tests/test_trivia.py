@@ -8,6 +8,21 @@ from lib.screen_reader import ScreenEvidence
 from lib.daily_queue import next_reset
 
 class TriviaTests(unittest.TestCase):
+    def test_oct31_missing_answers_match_live_options_and_keep_submission_guard(self):
+        now=datetime.now(timezone.utc)
+        for name,number,answer in (('trivia_beta_ray_bill_oct31.png',2,'Beta Ray Bill'),
+                                  ('trivia_tony_stark_oct31.png',3,'Alcoholism'),
+                                  ('trivia_emblems_oct31.png',5,'Emblems')):
+            with self.subTest(name=name):
+                evidence=TriviaReader().read(Path(__file__).parent/'fixtures'/name)
+                self.assertEqual(evidence.screen,'trivia_question');self.assertFalse(evidence.errors)
+                self.assertEqual(evidence.values['question_number'],number)
+                index=choose_option(evidence.values['question'],evidence.values['options'])
+                self.assertIsNotNone(index);self.assertEqual(evidence.values['options'][index],answer)
+                session=TriviaSession(now)
+                self.assertEqual(session.observe(evidence,now),('answer',*evidence.values['points'][index]))
+                self.assertEqual(session.observe(evidence,now),('wait',0,0));self.assertFalse(session.done)
+
     def test_oct28_missing_questions_use_named_answers_and_preserve_pending_guard(self):
         now=datetime.now(timezone.utc)
         for name,number,answer in (('trivia_olympus_oct28.png',2,'Loki'),
@@ -84,7 +99,7 @@ class TriviaTests(unittest.TestCase):
         now=datetime.now(timezone.utc);root=Path(__file__).parent/'fixtures'
         for name in ('trivia_completed_oct24_top.png','trivia_completed_oct24_bottom.png',
                      'trivia_completed_top.png','trivia_completed_bottom.png','trivia_completed_oct28_bottom.png',
-                     'trivia_completed_oct28_after_reset.png'):
+                     'trivia_completed_oct28_after_reset.png','trivia_completed_oct31.png'):
             with self.subTest(name=name):
                 session=TriviaSession(now);session.pending='interrupted final answer'
                 e=TriviaReader().read(root/name)

@@ -67,6 +67,8 @@ class StuckRecovery:
              timedelta(0)<=datetime.now(timezone.utc)-self.story_started<timedelta(minutes=95)))
 
     def restart_stuck_game(self):
+        if self.world_event_state.pending or self.world_event_state.started:
+            self.stop_queue();self.log('World Event submission is protected; game left running without restart or replay',True);return
         if self.dimension_claim_protected():
             self.stop_queue();self.log('Dimension clears are confirmed; contribution claim needs verification. Submission and claim state preserved without replay.',True);return
         if self.zombie_protected():
@@ -112,6 +114,8 @@ class StuckRecovery:
         return False
 
     def recover_stuck_queue(self,reason):
+        if self.world_event_state.pending or self.world_event_state.started:
+            self.stop_queue();self.log('World Event outcome needs verification: '+reason+'; submission preserved without restart or replay',True);return
         if self.dimension_claim_protected():
             self.stop_queue();self.log('Dimension contribution needs inspection; confirmed clears and claim state preserved: '+reason,True);return
         if self.zombie_protected():

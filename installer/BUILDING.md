@@ -1,13 +1,16 @@
-# Local Windows installer builds
+# Windows installer builds
 
-GitHub Support restored account access and confirmed that installers may be
-provided as Release assets on 30 October 2026. Direct installer-download links
-remain excluded from the README. Verified local artifacts may be uploaded
-manually with their matching source archive, build manifest and checksums.
+Installers are provided as Release assets. Keep direct installer-download links
+out of the README. Verified local artifacts may also be uploaded manually with
+their matching source archive, build manifest and checksums.
 
-Automatic installer publication remains disabled pending clarification about
-the removed workflow. Pushing source changes does not build an installer or
-publish a release. The setup guide covers both the installer and source methods.
+Every push to main builds the exact source revision,
+checks offline OCR and GUI startup, and verifies installation, reinstall and
+uninstall using isolated user data. Only a successful build publishes the
+installer, corresponding source, validation manifest and checksums as Release
+assets. A draft stages all assets before becoming the latest release; failed
+builds retain the previous latest release. Manual runs are also available.
+README.md contains no direct installer-download link, badge or workflow link.
 
 ## What is included
 

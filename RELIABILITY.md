@@ -230,3 +230,58 @@ Replaced the obsolete Python 3.6 build downloader with a pinned Windows x64 appl
 The full regression suite passed all 592 tests in 326.516 seconds after the shared path/OCR changes. The frozen GUI and offline OCR self-test passed, including both private Olympus/Silver Samurai screenshots. The installed application passed the same offline check. Reinstall preserved synthetic pending-state and custom-answer files byte for byte; uninstall removed the program while preserving those files. No game connection or queue was started. Installer notices use short filenames with their original paths recorded in the dependency inventory, avoiding the Windows path-length failure found by installation testing.
 
 Bundle contents, embedded Python source filenames, the compiled installer and tracked source passed the personal-identity audit. Private screenshots, runtime settings and diagnostics are excluded. Local evidence: `diagnostics/installer-full-suite.log`, `build/installer-c_66a7dz/application-selftest.json` and `build/installer-c_66a7dz/installed-smoke-final/installer-validation.json`. The GitHub workflow independently rebuilds and verifies installation before publishing a versioned release with source, manifest and checksums. A failed build preserves the previous successful release.
+
+## October 31: World Event interrupted start and daily trivia
+
+World Event's reader correctly reported 0/2. The controller retained an earlier
+submitted/started flag and therefore never began the three-visit zero check.
+The input audit and queue log show the cause: after Start, another fresh frame
+still showed the Start screen. The controller treated this as an invalid second
+submission, entered generic recovery and restarted the game before a result
+was observed. Later visits waited indefinitely on the retained started flag.
+
+Repeated Start frames now wait without a second tap or navigation recovery.
+Generic recovery and restart also protect World Event submissions. An
+interrupted start can be reconciled only after a continuous minute of distinct,
+fresh captures of the same navigable World Event lobby, with fewer remaining
+entries than before submission. A battle, another screen, missing controls,
+changed count, stale frame or long capture gap discards that candidate. This
+verification restarts from scratch after a bot restart. The pending submission
+remains protected until the existing three separately reopened zero-entry
+visits prove daily completion. Failed state saves stop without navigation or
+discarding the pending outcome.
+
+Daily Trivia completed all five questions correctly and saved completion until
+the next 15:00 UTC reset. Added game-confirmed Beta Ray Bill, Alcoholism and
+Emblems answers to the shared bank. The completed summary required no scrolling.
+Private screenshot regressions cover the missing questions, summary and the
+actual stuck World Event page. Focused World Event controller checks passed
+26 tests. The first complete regression suite passed all 603 tests in 529.037
+seconds. The updated desktop restored saved queues, daily completions, trivia,
+GBR clearance and the pending World Event submission without resetting them.
+Live verification then exposed a scheduler interaction: once the old started
+flag was reconciled, the startup board preflight interrupted the first zero
+refresh. The board preflight now waits for the active World Event check to
+finish. A regression enables the real startup preflight while World Event has
+a pending zero check; all 27 focused controller tests pass. The final combined
+suite is rerun before publication.
+
+Live verification completed at 02:04:59 Europe/Budapest. The controller read
+0/2 on three reopened event-page visits, saved done=true with pending=false and
+started=false until 15:00 UTC, and moved on to objective inspection. Loading
+the saved state independently restores verified completion. The input audit
+contains no new World Event confirmation or Start submission during this
+repair. Trivia completion also survived both desktop reloads.
+
+Final combined validation: all 604 tests passed in 449.124 seconds. The live
+queue shows World Event as Done today with 0/2 remaining, completed its fresh
+objective and Dispatch checks, and returned to routine monitoring. No mission
+submission remains pending. Private validation details are kept in
+`diagnostics/world-event-trivia-oct31-validation.json` and
+`diagnostics/full-suite-oct31-final.log`.
+
+Automatic installer builds/publication were restored at the user's explicit
+request. Installers remain Release assets; the README has no direct installer
+download link or workflow badge. Publication stages verified artifacts in a
+draft and promotes it only after upload succeeds. The previous latest release
+is retained if a build or upload fails.

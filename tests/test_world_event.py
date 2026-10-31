@@ -6,6 +6,48 @@ from lib.world_event import WorldEventState,WorldEventReader,event_delay
 from lib.daily_queue import next_reset
 
 class WorldEventTests(unittest.TestCase):
+ def test_orphaned_start_requires_continuous_fresh_consumed_entry_lobby(self):
+  s=WorldEventState(self.now);s.pending=True;s.started=True;s.before=1
+  values=dict(self.values(0),lobby_controls_verified=True)
+  for second in range(0,61,5):
+   stamp=self.now+timedelta(seconds=second)
+   self.assertEqual(s.reconcile_started_lobby(values,stamp,stamp),second==60)
+  self.assertTrue(s.pending);self.assertTrue(s.started);self.assertFalse(s.done)
+  self.assertEqual(s.zero_observations,[])
+
+ def test_orphaned_lobby_rejects_duplicates_gaps_missing_controls_and_no_counter_drop(self):
+  for change in ({'entries':(1,2)},{'lobby_controls_verified':False},{'entries':(0,True)}):
+   s=WorldEventState(self.now);s.pending=True;s.started=True;s.before=1
+   values=dict(self.values(0),lobby_controls_verified=True);values.update(change)
+   for second in range(0,66,5):
+    stamp=self.now+timedelta(seconds=second)
+    self.assertFalse(s.reconcile_started_lobby(values,stamp,stamp))
+   self.assertIsNone(s.lobby_reconciliation);self.assertTrue(s.started)
+  s=WorldEventState(self.now);s.pending=True;s.started=True;s.before=1
+  values=dict(self.values(0),lobby_controls_verified=True)
+  s.reconcile_started_lobby(values,self.now,self.now)
+  for second in range(0,26,5):
+   self.assertFalse(s.reconcile_started_lobby(values,self.now+timedelta(seconds=second),self.now))
+  late=self.now+timedelta(seconds=61)
+  self.assertFalse(s.reconcile_started_lobby(values,late,late))
+  self.assertFalse(s.reconcile_started_lobby(values,late+timedelta(seconds=31),late))
+  self.assertIsNone(s.lobby_reconciliation)
+
+ def test_orphaned_lobby_verification_is_not_restored_across_restart(self):
+  with TemporaryDirectory(dir=Path(__file__).resolve().parents[3]/'work') as folder:
+   path=Path(folder)/'state.json';s=WorldEventState(self.now);s.pending=True;s.started=True;s.before=1
+   values=dict(self.values(0),lobby_controls_verified=True)
+   for second in range(0,56,5):
+    stamp=self.now+timedelta(seconds=second);s.reconcile_started_lobby(values,stamp,stamp)
+   s.save(path);loaded=WorldEventState.load(stamp,path)
+   self.assertTrue(loaded.started);self.assertTrue(loaded.pending);self.assertIsNone(loaded.lobby_reconciliation)
+   self.assertFalse(loaded.reconcile_started_lobby(values,stamp,stamp))
+
+ def test_live_latched_zero_page_has_verified_navigation_and_consumed_entries(self):
+  e=WorldEventReader().read(Path(__file__).parent/'fixtures/world_event_zero_latched_oct31.png')
+  self.assertFalse(e.errors);self.assertEqual(e.screen,'we_lobby')
+  self.assertEqual(e.values['entries'],(0,2));self.assertTrue(e.values['lobby_controls_verified'])
+
  def test_done_cache_requires_valid_three_visit_page_proof(self):
   import json
   with TemporaryDirectory(dir=Path(__file__).resolve().parents[3]/'work') as d:
